@@ -2,6 +2,7 @@
 
 namespace Devsaadat\Farazsms;
 
+use Devsaadat\Farazsms\Enums\RequestType;
 use Exception;
 
 class FarazSMS
@@ -46,19 +47,25 @@ class FarazSMS
     /**
      * @throws Exception
      */
-    private function request(string $path, array $data = []) : array
+    private function request(string $path, RequestType $requestType, array $data = []) : array
     {
 
         $curl = curl_init();
+        $url = 'https://'. $this->base_uri . $path;
+        if($requestType == RequestType::Get and !empty($data)) {
+            $url .= '?'.http_build_query($data);
+        }
+        $method = match ($requestType){ RequestType::Post => 'POST', RequestType::Get => 'GET'};
+
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://'. $this->base_uri . $path,
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 0,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_POSTFIELDS => json_encode($data),
             CURLOPT_HTTPHEADER => array(
                 'Accept: application/json',
@@ -66,6 +73,9 @@ class FarazSMS
                 'Content-Type: application/json'
             ),
         ));
+        if($requestType == RequestType::Post){
+            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        }
 
         $response = curl_exec($curl);
 
@@ -110,7 +120,7 @@ class FarazSMS
             'number_format' => 'english'
         ];
 
-        return $this->request('/ws/v1/sms/simple', $data);
+        return $this->request('/ws/v1/sms/simple', RequestType::Post, $data);
     }
 
     /**
@@ -130,7 +140,15 @@ class FarazSMS
             'number_format' => 'english'
         ];
 
-        return $this->request('/ws/v1/sms/pattern', $data);
+        return $this->request('/ws/v1/sms/pattern', RequestType::Post, $data);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function sendRequestDetails(int $id): array
+    {
+        return $this->request('/ws/v1/send_request/' . $id, RequestType::Get);
     }
 
 
