@@ -1,0 +1,21 @@
+{
+    "name": "devsaadat/farazsms",
+    "description": "Library for Faraz SMS",
+    "type": "library",
+    "license": "mit",
+    "autoload": {
+        "psr-4": {
+            "Devsaadat\\Farazsms\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Amirhossein Saadat",
+            "email": "amirhossein.esmailzadeh.1379@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+      "ext-curl": "*"
+    }
+}
